@@ -598,8 +598,8 @@ Execute the following query in `pdb` to confirm the updated/deleted table rows,
 or use SQLITE EXPLORER to confirm the table contents:
 
 ```py
-departments = CURSOR.execute('SELECT * FROM departments')
-[row for row in departments]
+ipdb> departments = CURSOR.execute('SELECT * FROM departments')
+ipdb> [row for row in departments]
 # => [(1, 'Payroll', 'Building A, 5th Floor'), (3, 'Corporate Accounting', 'Building D, 10th Floor')]
 ```
 
