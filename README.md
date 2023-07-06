@@ -81,10 +81,8 @@ pipenv install
 pipenv shell
 ```
 
-The starter code for the `Department` class is in `lib/department.py`:
-
-The `Department` class is defined with attributes for `id`, `name` and
-`location`.
+The starter code for the `Department` class is in `lib/department.py`. The
+`Department` class is defined with attributes for `id`, `name` and `location`.
 
 The `__init__` method assigns a default value of `None` to the `id` attribute.
 The `id` will be assigned a value _after_ persisting the object attributes as a
@@ -217,9 +215,9 @@ ipdb.set_trace()
 
 In this file, we're importing in the `sqlite3.Connection` and `sqlite3.Cursor`
 objects that we instantiated in `lib/config.py`. We're also importing the
-`Department` class so that we can use its methods during our `pdb` session.
+`Department` class so that we can use its methods during our `ipdb` session.
 
-Run `python debug.py` to enter `pdb`:
+Run `python debug.py` to enter the `ipdb` session:
 
 ```bash
 python lib/debug.py
@@ -255,21 +253,21 @@ Expanding the `SQLITE EXPLORER` menu item lets us see the database schema:
 ![sqlite explorer view](https://curriculum-content.s3.amazonaws.com/7134/python-p3-v2-orm/sqlexplorerview.png)
 
 If we want to delete the table from the database, we would execute the following
-in `pdb`:
+in `ipdb`:
 
 ```py
 ipdb> Department.drop_table()
 ```
 
 Confirm the table is deleted using the SQLITE EXPLORER (or retype the PRAGMA
-command in `pdb`).
+command in the `ipdb` session).
 
 We'll be making lots of changes to our `Department` class to experiment with
 different ways to persist the data. Let's update `debug.py` to drop then
 recreate the table, so we always start with a fresh table with no data.
 
-Make sure to first exit out of `pdb` by typing `exit()` or by pressing `ctrl-d`.
-Then update `debug.py` as shown:
+Make sure to first exit out of `ipdb` by typing `exit()` or by pressing
+`ctrl-d`. Then update `debug.py` as shown:
 
 ```py
 #!/usr/bin/env python3
@@ -292,7 +290,7 @@ python lib/debug.py
 ```
 
 Confirm the table has been recreated using either the SQLITE EXPLORER extension,
-or by executing the PRAGMA statement in `pdb`.
+or by executing the PRAGMA statement in the `ipdb` session.
 
 ---
 
@@ -404,8 +402,8 @@ The overall process for persisting our object to the database is:
 We can step through this process by instantiating and saving `Department`
 objects, printing the attribute values at each step. Update `debug.py` as shown,
 then execute `python lib/debug.py` to see the result of each print statement
-(make sure to exit out of `pdb` with `exit()` or `ctrl+D` in order to reload the
-code if you left it open earlier).
+(make sure to exit out of `ipdb` with `exit()` or `ctrl+D` in order to reload
+the code if you left it open earlier).
 
 - Prior to calling the `save()` method, the print statement shows the newly
   instantiated `Department` object's `id` attribute initially has the value of
@@ -441,7 +439,7 @@ ipdb.set_trace()
 ```
 
 The `save()` method does not return a value, but we can query the database table
-and create a list from the result. Execute this code in `pdb`:
+and create a list from the result. Execute this code:
 
 ```py
 ipdb> departments = CURSOR.execute('SELECT * FROM departments')
@@ -515,9 +513,9 @@ accounting = Department.create("Accounting", "Building B, 1st Floor")
 print(accounting)
 ```
 
-Run the file using `python lib/debug.py`, then try querying the table in `pdb`
-or use the SQLITE EXPLORER extension to confirm the new table row for the
-accounting department.
+Run the file using `python lib/debug.py`, then try querying the table in the
+`ipdb` session or use the SQLITE EXPLORER extension to confirm the new table row
+for the accounting department.
 
 ### Update and delete methods
 
@@ -594,7 +592,7 @@ ipdb.set_trace()
 
 Run `python lib/debug.py`.
 
-Execute the following query in `pdb` to confirm the updated/deleted table rows,
+Execute the following query in `ipdb` to confirm the updated/deleted table rows,
 or use SQLITE EXPLORER to confirm the table contents:
 
 ```py
@@ -603,8 +601,8 @@ ipdb> [row for row in departments]
 # => [(1, 'Payroll', 'Building A, 5th Floor'), (3, 'Corporate Accounting', 'Building D, 10th Floor')]
 ```
 
-You can use `pdb` to experiment with creating/updating/deleting additional
-`Department` objects in the database.
+You can use the `ipdb` session to experiment with creating/updating/deleting
+additional `Department` objects in the database.
 
 ### Testing the ORM
 
