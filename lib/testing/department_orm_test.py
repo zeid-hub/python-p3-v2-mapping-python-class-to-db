@@ -1,5 +1,5 @@
 from department import Department
-from config import CURSOR, CONN
+from __init__ import CURSOR, CONN
 import pytest
 
 

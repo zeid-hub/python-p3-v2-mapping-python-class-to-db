@@ -1,8 +1,10 @@
-from config import CURSOR, CONN
-
+from __init__ import CURSOR, CONN
 
 class Department:
 
+    # Define a dictionary to store class instances for subsequent lookup when mapping a table row to a class instance.
+    all = {}
+    
     def __init__(self, name, location, id=None):
         self.id = id
         self.name = name
