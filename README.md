@@ -79,8 +79,22 @@ new table row (`id` will be assigned the value of the new row's primary key).
 We'll see how to assign the `id` attribute later in the lesson.
 
 There is a class variable named `all` that will store `Department` class
-instances in a dictionary. The dictionary key is the `id` attribute, while the
-value is a `Department` object that has been persisted to the database.
+instances in a dictionary:
+
+- The key is the `id` attribute
+- The value is a `Department` object that has been persisted to the database.
+
+Each time we persist a `Department` class instance to the database, we will add
+a dictionary entry. Why? In a subsequent lesson we will learn how to map the
+values stored in a database table row as attributes of a `Department` class
+instance. We'll check the dictionary to see if a `Department` instance already
+exists to avoid creating duplicate Python objects with similar state.
+Unfortunately, this means we are not maintaining a **single source of truth**
+for instances in a particular class since each row in the database has a
+corresponding entry in the dictionary. While this is necessary in our manual
+implementation of an ORM, in later lessons we will use an existing ORM framework
+**FLASK-SQLALCHEMY** that lets us avoid this data redundancy and thus achieve
+**single source of truth**.
 
 ```py
 from __init__ import CURSOR, CONN
