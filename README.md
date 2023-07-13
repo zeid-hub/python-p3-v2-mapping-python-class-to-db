@@ -29,7 +29,7 @@ We equate a Python **class** with a database **table** and a **class instance
 Why map classes to tables? To persist data stored in Python objects efficiently
 and in an organized manner, we need to map a Python class to a database table by
 writing methods that encapsulate table creation and deletion, along with methods
-to persist and query object state within a database table.
+to save, update, delete, and query object state within a database table.
 
 As an example, assume we want to create a database to store data about the
 departments and employees within a company. It is convention to pluralize the
@@ -43,7 +43,7 @@ class maps to the "departments" table and the `Employee` class maps to the
 | Employee     | employees                 |
 
 In this lesson, we will learn how to persist a Python object as a row in a
-database table by implementing the following methods:
+database table by implementing the following methods for a `Department` class:
 
 | Method                      | Return     | Description                                    |
 | --------------------------- | ---------- | ---------------------------------------------- |
@@ -74,36 +74,15 @@ The starter code for the `Department` class is in `lib/department.py`. The
 `Department` class is defined with attributes for `id`, `name` and `location`.
 
 The `__init__` method assigns a default value of `None` to the `id` attribute.
-The `id` will be assigned a value _after_ persisting the object attributes as a
-new table row (`id` will be assigned the value of the new row's primary key).
-We'll see how to assign the `id` attribute later in the lesson.
-
-There is a class variable named `all` that will store `Department` class
-instances in a dictionary:
-
-- The key is the `id` attribute
-- The value is a `Department` object that has been persisted to the database.
-
-Each time we persist a `Department` class instance to the database, we will add
-a dictionary entry. Why? In a subsequent lesson we will learn how to map the
-values stored in a database table row as attributes of a `Department` class
-instance. We'll check the dictionary to see if a `Department` instance already
-exists to avoid creating duplicate Python objects with similar state.
-Unfortunately, this means we are not maintaining a **single source of truth**
-for instances in a particular class since each row in the database has a
-corresponding entry in the dictionary. While this is necessary in our manual
-implementation of an ORM, in later lessons we will use an existing ORM framework
-**FLASK-SQLALCHEMY** that lets us avoid this data redundancy and thus achieve
-**single source of truth**.
+The `id` will be assigned a value _after_ saving the object attributes as a new
+table row (`id` will be assigned the value of the new row's primary key). We'll
+see how to assign the `id` attribute later in the lesson.
 
 ```py
 from __init__ import CURSOR, CONN
 
+
 class Department:
-
-    # Define a dictionary to store class instances for subsequent lookup when mapping a table row to a class instance.
-    all = {}
-
 
     def __init__(self, name, location, id=None):
         self.id = id
@@ -186,7 +165,7 @@ from __init__ import CURSOR, CONN
 
 class Department:
 
-    # add new ORM methods after existing attributes and methods ....
+    # add new ORM methods after existing methods ....
 
     @classmethod
     def create_table(cls):
@@ -338,9 +317,8 @@ The overall process for save a `Department` instance to the database is:
   values regarding that instance.
 - Grab the primary key `id` column of that newly inserted row and assign that
   value to the `Department` instance's `id` attribute.
-- Add the `Department` instance to the dictionary using the `id` as key.
 
-Add the `save(self)` method to the end of the `Department` class to :
+Add the `save(self)` method to the end of the `Department` class:
 
 ```py
 from __init__ import CURSOR, CONN
@@ -348,12 +326,12 @@ from __init__ import CURSOR, CONN
 
 class Department:
 
-    # existing attributes and methods ...
+    # existing methods ...
 
     def save(self):
         """ Insert a new row with the name and location values of the current Department object.
         Update object id attribute using the primary key value of new row.
-        Save the object in local dictionary using table row's PK as dictionary key"""
+        """
         sql = """
             INSERT INTO departments (name, location)
             VALUES (?, ?)
@@ -363,7 +341,6 @@ class Department:
         CONN.commit()
 
         self.id = CURSOR.lastrowid
-        Department.all[self.id] = self
 ```
 
 Notice the insert statement contains two question marks rather than string
@@ -408,19 +385,15 @@ Department.create_table()
 
 payroll = Department("Payroll", "Building A, 5th Floor")
 print(payroll)  # <Department None: Payroll, Building A, 5th Floor>
-print(Department.all) # {}
 
 payroll.save()  # Persist to db, assign object id attribute
 print(payroll)  # <Department 1: Payroll, Building A, 5th Floor>
-print(Department.all) # {1: <Department 1: Payroll, Building A, 5th Floor>}
 
 hr = Department("Human Resources", "Building C, East Wing")
 print(hr)  # <Department None: Human Resources, Building C, East Wing>
-print(Department.all) # {1: <Department 1: Payroll, Building A, 5th Floor>}
 
 hr.save()  # Persist to db, assign object id attribute
 print(hr)  # <Department 2: Human Resources, Building C, East Wing>
-print(Department.all) # {1: <Department 1: Payroll, Building A, 5th Floor>, 2: <Department 2: Human Resources, Building C, East Wing>}
 
 ipdb.set_trace()
 
@@ -432,12 +405,6 @@ ipdb.set_trace()
 - After the `save` method is executed, the print statement shows the
   `Department` object's `id` attribute has been updated to contain an integer
   value corresponding to the primary key of the new table row.
-
-Notice also that a new class instance is not added to the dictionary (i.e.
-`Department.all`) until the `save()` method is called to persist the object to
-the database. We want the dictionary to match what is being stored in the
-database so that we can eventually map a table row to an existing class
-instance.
 
 The `save()` method does not return a value, but we can query the database table
 and create a list from the result. Execute this code:
@@ -464,9 +431,7 @@ representation of that department to our database_.
 - The `__init__` method creates a new Python object, an instance of the
   `Department` class.
 - The `save()` method takes the attributes that characterize the Python object
-  and saves them in a new row in the database "departments" table. The method
-  also then adds the Python object to the dictionary using the table row primary
-  key as the dictionary key.
+  and saves them in a new row in the database "departments" table.
 
 While it is possible to update the `__init__` method to immediately save the
 object's attributes as a new table row, this is not a great idea. We don't want
@@ -494,7 +459,7 @@ method is called.
 ```py
 class Department:
 
-    # ... rest of Department methods
+    # ... existing methods
 
     @classmethod
     def create(cls, name, location):
@@ -528,12 +493,9 @@ Department.create_table()
 
 payroll = Department.create("Payroll", "Building A, 5th Floor")
 print(payroll)  # <Department 1: Payroll, Building A, 5th Floor>
-print(Department.all) # {1: <Department 1: Payroll, Building A, 5th Floor>}
 
 hr = Department.create("Human Resources", "Building C, East Wing")
 print(hr)  # <Department 2: Human Resources, Building C, East Wing>
-print(Department.all) # {1: <Department 1: Payroll, Building A, 5th Floor>, 2: <Department 2: Human Resources, Building C, East Wing>}
-
 ```
 
 Run the file using `python lib/debug.py`, then try querying the table in the
@@ -547,33 +509,30 @@ for the accounting department.
 | update(self)  | None   | Update an object's corresponding table row    |
 | delete (self) | None   | Delete the table row for the specified object |
 
-Let's edit the `Department` class with methods to update and delete the database
-row associated a given `Department` object:
+Edit the `Department` class to add methods to update and delete the database row
+associated a given `Department` object:
 
 ```py
-def update(self):
-    """Update the table row corresponding to the current Department object."""
-    sql = """
-        UPDATE departments
-        SET name = ?, location = ?
-        WHERE id = ?
-    """
-    CURSOR.execute(sql, (self.name, self.location, self.id))
-    CONN.commit()
+    def update(self):
+        """Update the table row corresponding to the current Department object."""
+        sql = """
+            UPDATE departments
+            SET name = ?, location = ?
+            WHERE id = ?
+        """
+        CURSOR.execute(sql, (self.name, self.location, self.id))
+        CONN.commit()
 
+    def delete(self):
+        """Delete the table row corresponding to the current Department class instance"""
+        sql = """
+            DELETE FROM departments
+            WHERE id = ?
+        """
 
-def delete(self):
-    """Delete the table row corresponding to the current Department class instance.
-    Remove the object from local dictionary."""
-    sql = """
-        DELETE FROM departments
-        WHERE id = ?
-    """
+        CURSOR.execute(sql, (self.id,))
+        CONN.commit()
 
-    CURSOR.execute(sql, (self.id,))
-    CONN.commit()
-
-        del Department.all[self.id]
 ```
 
 Once again we use bound parameters, with each question mark `?` bound to a value
@@ -594,22 +553,18 @@ Department.create_table()
 
 payroll = Department.create("Payroll", "Building A, 5th Floor")
 print(payroll)  # <Department 1: Payroll, Building A, 5th Floor>
-print(Department.all) # {1: <Department 1: Payroll, Building A, 5th Floor>}
 
 hr = Department.create("Human Resources", "Building C, East Wing")
 print(hr)  # <Department 2: Human Resources, Building C, East Wing>
-print(Department.all) # {1: <Department 1: Payroll, Building A, 5th Floor>, 2: <Department 2: Human Resources, Building C, East Wing>}
 
 hr.name = 'HR'
 hr.location = "Building F, 10th Floor"
 hr.update()
 print(hr)  # <Department 2: HR, Building F, 10th Floor>
-print(Department.all) #  {1: <Department 1: Payroll, Building A, 5th Floor>, 2: <Department 2: HR, Building F, 10th Floor>}
 
 print("Delete Payroll")
-payroll.delete()  # delete from db table, object still exists in memory but has been removed from dictionary
+payroll.delete()  # delete from db table, object still exists in memory
 print(payroll)  # <Department 1: Payroll, Building A, 5th Floor>
-print(Department.all) # {2: <Department 2: HR, Building F, 10th Floor>}
 
 ipdb.set_trace()
 ```
@@ -671,9 +626,6 @@ from __init__ import CURSOR, CONN
 
 class Department:
 
-    # Define a dictionary to store class instances for subsequent lookup when mapping a table row to a class instance.
-    all = {}
-
     def __init__(self, name, location, id=None):
         self.id = id
         self.name = name
@@ -706,7 +658,7 @@ class Department:
     def save(self):
         """ Insert a new row with the name and location values of the current Department object.
         Update object id attribute using the primary key value of new row.
-        Save the object in local dictionary using table row's PK as dictionary key"""
+        """
         sql = """
             INSERT INTO departments (name, location)
             VALUES (?, ?)
@@ -716,7 +668,6 @@ class Department:
         CONN.commit()
 
         self.id = CURSOR.lastrowid
-        Department.all[self.id] = self
 
     @classmethod
     def create(cls, name, location):
@@ -736,8 +687,7 @@ class Department:
         CONN.commit()
 
     def delete(self):
-        """Delete the table row corresponding to the current Department class instance.
-        Remove the object from local dictionary."""
+        """Delete the table row corresponding to the current Department class instance"""
         sql = """
             DELETE FROM departments
             WHERE id = ?
@@ -746,7 +696,6 @@ class Department:
         CURSOR.execute(sql, (self.id,))
         CONN.commit()
 
-        del Department.all[self.id]
 
 ```
 
@@ -764,22 +713,18 @@ Department.create_table()
 
 payroll = Department.create("Payroll", "Building A, 5th Floor")
 print(payroll)  # <Department 1: Payroll, Building A, 5th Floor>
-print(Department.all) # {1: <Department 1: Payroll, Building A, 5th Floor>}
 
 hr = Department.create("Human Resources", "Building C, East Wing")
 print(hr)  # <Department 2: Human Resources, Building C, East Wing>
-print(Department.all) # {1: <Department 1: Payroll, Building A, 5th Floor>, 2: <Department 2: Human Resources, Building C, East Wing>}
 
 hr.name = 'HR'
 hr.location = "Building F, 10th Floor"
 hr.update()
 print(hr)  # <Department 2: HR, Building F, 10th Floor>
-print(Department.all) #  {1: <Department 1: Payroll, Building A, 5th Floor>, 2: <Department 2: HR, Building F, 10th Floor>}
 
 print("Delete Payroll")
-payroll.delete()  # delete from db table, object still exists in memory but has been removed from dictionary
+payroll.delete()  # delete from db table, object still exists in memory
 print(payroll)  # <Department 1: Payroll, Building A, 5th Floor>
-print(Department.all) # {2: <Department 2: HR, Building F, 10th Floor>}
 
 ipdb.set_trace()
 
