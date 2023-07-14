@@ -1,4 +1,4 @@
-from config import CURSOR, CONN
+from __init__ import CURSOR, CONN
 
 
 class Department:
