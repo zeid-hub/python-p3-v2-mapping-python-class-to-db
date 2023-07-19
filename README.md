@@ -170,7 +170,7 @@ class Department:
 
     @classmethod
     def create_table(cls):
-        """ Create a new table to persist the attributes of Department class instances """
+        """ Create a new table to persist the attributes of Department instances """
         sql = """
             CREATE TABLE IF NOT EXISTS departments (
             id INTEGER PRIMARY KEY,
@@ -182,7 +182,7 @@ class Department:
 
     @classmethod
     def drop_table(cls):
-        """ Drop the table that persists Department class instances """
+        """ Drop the table that persists Department instances """
         sql = """
             DROP TABLE IF EXISTS departments;
         """
@@ -331,7 +331,7 @@ class Department:
     # existing methods ...
 
     def save(self):
-        """ Insert a new row with the name and location values of the current Department object.
+        """ Insert a new row with the name and location values of the current Department instance.
         Update object id attribute using the primary key value of new row.
         """
         sql = """
@@ -469,7 +469,7 @@ class Department:
 
     @classmethod
     def create(cls, name, location):
-        """ Initialize a new Department object and save the object to the database """
+        """ Initialize a new Department instance and save the object to the database """
         department = Department(name, location)
         department.save()
         return department
@@ -520,7 +520,7 @@ associated an object that is an instance of the `Department` class:
 
 ```py
     def update(self):
-        """Update the table row corresponding to the current Department object."""
+        """Update the table row corresponding to the current Department instance."""
         sql = """
             UPDATE departments
             SET name = ?, location = ?
@@ -530,7 +530,7 @@ associated an object that is an instance of the `Department` class:
         CONN.commit()
 
     def delete(self):
-        """Delete the table row corresponding to the current Department class instance"""
+        """Delete the table row corresponding to the current Department instance"""
         sql = """
             DELETE FROM departments
             WHERE id = ?
@@ -606,8 +606,8 @@ code-along assignment using `git`.
 
 ## Conclusion
 
-We've seen how to map a Python **class** with a database **table** and a **class
-instance (object)** to a **table row**.
+We've seen how to map a Python **class** with a database **table** and an
+**instance of a class (i.e. object)** to a **table row**.
 
 | Python | Relational Database |
 | ------ | ------------------- |
@@ -644,7 +644,7 @@ class Department:
 
     @classmethod
     def create_table(cls):
-        """ Create a new table to persist the attributes of Department class instances """
+        """ Create a new table to persist the attributes of Department instances """
         sql = """
             CREATE TABLE IF NOT EXISTS departments (
             id INTEGER PRIMARY KEY,
@@ -656,7 +656,7 @@ class Department:
 
     @classmethod
     def drop_table(cls):
-        """ Drop the table that persists Department class instances """
+        """ Drop the table that persists Department instances """
         sql = """
             DROP TABLE IF EXISTS departments;
         """
@@ -664,7 +664,7 @@ class Department:
         CONN.commit()
 
     def save(self):
-        """ Insert a new row with the name and location values of the current Department object.
+        """ Insert a new row with the name and location values of the current Department instance.
         Update object id attribute using the primary key value of new row.
         """
         sql = """
@@ -679,13 +679,13 @@ class Department:
 
     @classmethod
     def create(cls, name, location):
-        """ Initialize a new Department object and save the object to the database """
+        """ Initialize a new Department instance and save the object to the database """
         department = Department(name, location)
         department.save()
         return department
 
     def update(self):
-        """Update the table row corresponding to the current Department object."""
+        """Update the table row corresponding to the current Department instance."""
         sql = """
             UPDATE departments
             SET name = ?, location = ?
@@ -695,7 +695,7 @@ class Department:
         CONN.commit()
 
     def delete(self):
-        """Delete the table row corresponding to the current Department class instance"""
+        """Delete the table row corresponding to the current Department instance"""
         sql = """
             DELETE FROM departments
             WHERE id = ?
