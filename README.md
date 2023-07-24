@@ -1,4 +1,4 @@
-# Mapping A Python Class to a Database Table
+# Mapping A Python Class to a Database Table : Code-Along
 
 ## Learning Goals
 
@@ -18,8 +18,8 @@
 **Object-Relational Mapping (ORM)** is a programming technique that provides a
 mapping between an object-oriented data model and a relational database model.
 
-We equate a Python **class** with a database **table** and a **class instance
-(object)** to a **table row**.
+We equate a Python **class** with a database **table** and an instance of a
+class (i.e. an object) to a **table row**.
 
 | Python | Relational Database |
 | ------ | ------------------- |
@@ -43,16 +43,16 @@ class maps to the "departments" table and the `Employee` class maps to the
 | Employee     | employees                 |
 
 In this lesson, we will learn how to persist a Python object as a row in a
-database table by implementing the following methods for a `Department` class:
+database table by implementing the following methods for a class:
 
-| Method                      | Return     | Description                                    |
-| --------------------------- | ---------- | ---------------------------------------------- |
-| create_table (cls)          | None       | Create a table to store class instances.       |
-| drop_table (cls)            | None       | Drop the table.                                |
-| save (self)                 | None       | Save an object as a new table row.             |
-| create(cls, name, location) | Department | Create new object and save as a new table row. |
-| update(self)                | None       | Update an object's corresponding table row     |
-| delete (self)               | None       | Delete the table row for the specified object  |
+| Method                  | Return                                 | Description                                                                                  |
+| ----------------------- | -------------------------------------- | -------------------------------------------------------------------------------------------- |
+| create_table (cls)      | None                                   | Create a table to store data about instances of a class.                                     |
+| drop_table (cls)        | None                                   | Drop the table.                                                                              |
+| save (self)             | None                                   | Save the attributes of an object as a new table row.                                         |
+| create(cls, attributes) | an object that is an instance of `cls` | Create a new object that is an instance of `cls` and save its attributes as a new table row. |
+| update(self)            | None                                   | Update an object's corresponding table row                                                   |
+| delete (self)           | None                                   | Delete the table row for the specified object                                                |
 
 This lesson explains how to map a single class to a database table. Techniques
 for mapping relationships between multiple classes will be covered in a separate
@@ -146,10 +146,11 @@ with the rest of this lesson.
 
 ### Creating (and dropping) the "departments" table
 
-| Signature          | Return | Description                              |
-| ------------------ | ------ | ---------------------------------------- |
-| create_table (cls) | None   | Create a table to store class instances. |
-| drop_table (cls)   | None   | Drop the table.                          |
+| Method             | Return | Description                                              |
+| ------------------ | ------ | -------------------------------------------------------- |
+| create_table (cls) | None   | Create a table to store data about instances of a class. |
+| drop_table (cls)   | None   | Drop the table.                                          |
+|                    |
 
 To "map" our `Department` class to a database table, we will:
 
@@ -169,7 +170,7 @@ class Department:
 
     @classmethod
     def create_table(cls):
-        """ Create a new table to persist the attributes of Department class instances """
+        """ Create a new table to persist the attributes of Department instances """
         sql = """
             CREATE TABLE IF NOT EXISTS departments (
             id INTEGER PRIMARY KEY,
@@ -181,7 +182,7 @@ class Department:
 
     @classmethod
     def drop_table(cls):
-        """ Drop the table that persists Department class instances """
+        """ Drop the table that persists Department instances """
         sql = """
             DROP TABLE IF EXISTS departments;
         """
@@ -289,34 +290,35 @@ or by executing the PRAGMA statement in the `ipdb` session.
 
 ---
 
-## Mapping Class Instances to Table Rows
+## Mapping An Object to A Table Row
 
-| Signature   | Return | Description                        |
-| ----------- | ------ | ---------------------------------- |
-| save (self) | None   | Save an object as a new table row. |
+| Method      | Return | Description                                          |
+| ----------- | ------ | ---------------------------------------------------- |
+| save (self) | None   | Save the attributes of an object as a new table row. |
 
 Now that we have the database and "departments" table, we can start persisting
 object data as rows in the table. Note, **we are not saving Python objects in
 our database.** Rather, we are going to take the individual attributes of a
-given class instance, in this case a department's `name` and `location`, and
-save those attributes that describe an individual department to the database as
-a single row. The row will also include a primary key column named `id`.
+given object, in this case a department's `name` and `location`, and save those
+attributes to the database as a single row. The row will also include a primary
+key column named `id`.
 
-For example, persisting two `Department` class instances with `name` and
-`location` attributes might result in a "departments" table that looks like
-this:
+For example, persisting the `name` and `location` attributes of two different
+instances of the `Department` class might result in a "departments" table that
+looks like this:
 
 ![department rows](https://curriculum-content.s3.amazonaws.com/7134/python-p3-v2-orm/departmentrows.png)
 
-We'll persist a `Department` object as a row in a "departments" table with a new
-**instance method** named **save()**.
+We'll persist an object that is an instance of the `Department` class as a row
+in a "departments" table with a new **instance method** named **save()**.
 
-The overall process for save a `Department` instance to the database is:
+The overall process to save the attributes of a specific `Department` object to
+the database is:
 
 - Insert a new row into the "departments" table that contains the attribute
-  values regarding that instance.
+  values of the object.
 - Grab the primary key `id` column of that newly inserted row and assign that
-  value to the `Department` instance's `id` attribute.
+  value as the `id` attribute of the object.
 
 Add the `save(self)` method to the end of the `Department` class:
 
@@ -329,7 +331,7 @@ class Department:
     # existing methods ...
 
     def save(self):
-        """ Insert a new row with the name and location values of the current Department object.
+        """ Insert a new row with the name and location values of the current Department instance.
         Update object id attribute using the primary key value of new row.
         """
         sql = """
@@ -366,11 +368,12 @@ provided to us by the `sqlite3` module's `Cursor.execute()` method will take the
 values we pass in as an argument tuple `(self.name, self.location)` and apply
 them as the values of the question marks.
 
-We can step through this process by instantiating and saving `Department`
-objects, printing the object state before and after saving to the database.
-Update `debug.py` as shown below, then execute `python lib/debug.py` to see the
-result of each print statement (make sure to exit out of `ipdb` with `exit()` or
-`ctrl+D` in order to reload the code if you left it open earlier).
+We can step through this process by instantiating and saving objects that are
+instances of the `Department` class, printing the object state before and after
+saving to the database. Update `debug.py` as shown below, then execute
+`python lib/debug.py` to see the result of each print statement (make sure to
+exit out of `ipdb` with `exit()` or `ctrl+D` in order to reload the code if you
+left it open earlier).
 
 ```py
 #!/usr/bin/env python3
@@ -407,7 +410,9 @@ ipdb.set_trace()
   value corresponding to the primary key of the new table row.
 
 The `save()` method does not return a value, but we can query the database table
-and create a list from the result. Execute this code:
+and create a list from the result.
+
+Execute this code by entering **one statement at a time** to the `ipbd>` prompt:
 
 ```py
 ipdb> departments = CURSOR.execute('SELECT * FROM departments')
@@ -424,9 +429,9 @@ We can also use VS Code's SQLITE Explorer to show the table results. Click the
 
 ### Creating Instances vs. Creating Table Rows
 
-The moment in which we create a new `Department` class instance with the
-`__init__` method is _different than the moment in which we save a
-representation of that department to our database_.
+The moment in which we create a new object that is an instance of the
+`Department` class with the `__init__` method is _different than the moment in
+which we save a representation of that department object to our database_.
 
 - The `__init__` method creates a new Python object, an instance of the
   `Department` class.
@@ -442,18 +447,19 @@ the programmer to decide when each method should be called.
 
 ### The `create()` Method
 
-| Method                      | Return     | Description                                    |
-| --------------------------- | ---------- | ---------------------------------------------- |
-| create(cls, name, location) | Department | Create new object and save as a new table row. |
+| Method                  | Return                                 | Description                                                                                  |
+| ----------------------- | -------------------------------------- | -------------------------------------------------------------------------------------------- |
+| create(cls, attributes) | an object that is an instance of `cls` | Create a new object that is an instance of `cls` and save its attributes as a new table row. |
+|                         |
 
 The `save()` method requires two steps to persist an object to the database:
 
-1. Create an instance of `Department`, then
-2. Call the `save()` method to insert a new row containing the attribute values
-   to the database.
+1. Create an object that is an instance of the `Department` class, then
+2. Call the `save()` method to insert a new row containing the object's
+   attribute values to the database.
 
 Let's define a new class method named `create()` that does just that in one
-step. We use a class method because our instance does not exist at the time the
+step. We use a class method because our object does not exist at the time the
 method is called.
 
 ```py
@@ -463,19 +469,19 @@ class Department:
 
     @classmethod
     def create(cls, name, location):
-        """ Initialize a new Department object and save the object to the database """
+        """ Initialize a new Department instance and save the object to the database """
         department = Department(name, location)
         department.save()
         return department
 ```
 
 Here, we use arguments to pass a name and location into our `create()` method.
-We use that name and location to instantiate a new `Department` class instance.
-Then, we call the `save()` method to persist the `Department` object's
-attributes to the database.
+We use that name and location to instantiate an object that is a new instance of
+the `Department` class. Then, we call the `save()` method to persist the new
+object's attributes to the database.
 
-Notice that at the end of the method, we are returning the `Department` class
-instance that we instantiated.
+Notice that at the end of the method, we are returning the `Department` object
+that we instantiated.
 
 Edit `debug.py` and let's use the `create()` method to instantiate and save the
 payroll and human resources departments:
@@ -504,17 +510,17 @@ for the accounting department.
 
 ### Update and delete methods
 
-| Signature     | Return | Description                                   |
+| Method        | Return | Description                                   |
 | ------------- | ------ | --------------------------------------------- |
 | update(self)  | None   | Update an object's corresponding table row    |
 | delete (self) | None   | Delete the table row for the specified object |
 
 Edit the `Department` class to add methods to update and delete the database row
-associated a given `Department` object:
+associated an object that is an instance of the `Department` class:
 
 ```py
     def update(self):
-        """Update the table row corresponding to the current Department object."""
+        """Update the table row corresponding to the current Department instance."""
         sql = """
             UPDATE departments
             SET name = ?, location = ?
@@ -524,7 +530,7 @@ associated a given `Department` object:
         CONN.commit()
 
     def delete(self):
-        """Delete the table row corresponding to the current Department class instance"""
+        """Delete the table row corresponding to the current Department instance"""
         sql = """
             DELETE FROM departments
             WHERE id = ?
@@ -571,8 +577,9 @@ ipdb.set_trace()
 
 Run `python lib/debug.py`.
 
-Execute the following query in `ipdb` to confirm the updated/deleted table rows,
-or use SQLITE EXPLORER to confirm the table contents:
+You can use the SQLITE EXPLORER extension to confirm the table contents, or use
+`ipdb` to query the table and confirm the updated/deleted table rows. Enter the
+following statements one at a time at the `ipbd>` prompt.
 
 ```py
 ipdb> departments = CURSOR.execute('SELECT * FROM departments')
@@ -580,7 +587,7 @@ ipdb> [row for row in departments]
 # => [(2, 'HR', 'Building F, 10th Floor')]
 ```
 
-You can use the `ipdb` session to experiment with creating/updating/deleting
+Try to use the `ipdb` session to experiment with creating/updating/deleting
 additional `Department` objects in the database.
 
 ### Testing the ORM
@@ -599,8 +606,8 @@ code-along assignment using `git`.
 
 ## Conclusion
 
-We've seen how to map a Python **class** with a database **table** and a **class
-instance (object)** to a **table row**.
+We've seen how to map a Python **class** with a database **table** and an
+**instance of a class (i.e. object)** to a **table row**.
 
 | Python | Relational Database |
 | ------ | ------------------- |
@@ -608,13 +615,14 @@ instance (object)** to a **table row**.
 | Object | Row                 |
 
 The important concept to grasp here is the idea that we are _not_ saving Python
-objects into our database. We are using the attributes of a given Python object
-to create a new row in our database table.
+objects into our database. We are saving the attribute values for a Python
+object as a new row in our database table. Our `departments` table contains one
+column for each instance attribute defined in the `Department` class.
 
-Our `departments` table contains one column for each `Department` instance
-attribute. The Python object and the table row are stored in separate memory
-spaces. Creating, updating, or deleting a Python object will not affect what is
-stored in the database, unless we explicitly call an ORM method to keep the
+An instance of a class resides in a part of the program's runtime memory called
+the heap, while table row data is stored in a database file. Creating, updating,
+or deleting a Python object that is stored in the heap will not affect what is
+stored in the database file, unless we explicitly call an ORM method to keep the
 separate memory spaces in sync.
 
 ---
@@ -636,7 +644,7 @@ class Department:
 
     @classmethod
     def create_table(cls):
-        """ Create a new table to persist the attributes of Department class instances """
+        """ Create a new table to persist the attributes of Department instances """
         sql = """
             CREATE TABLE IF NOT EXISTS departments (
             id INTEGER PRIMARY KEY,
@@ -648,7 +656,7 @@ class Department:
 
     @classmethod
     def drop_table(cls):
-        """ Drop the table that persists Department class instances """
+        """ Drop the table that persists Department instances """
         sql = """
             DROP TABLE IF EXISTS departments;
         """
@@ -656,7 +664,7 @@ class Department:
         CONN.commit()
 
     def save(self):
-        """ Insert a new row with the name and location values of the current Department object.
+        """ Insert a new row with the name and location values of the current Department instance.
         Update object id attribute using the primary key value of new row.
         """
         sql = """
@@ -671,13 +679,13 @@ class Department:
 
     @classmethod
     def create(cls, name, location):
-        """ Initialize a new Department object and save the object to the database """
+        """ Initialize a new Department instance and save the object to the database """
         department = Department(name, location)
         department.save()
         return department
 
     def update(self):
-        """Update the table row corresponding to the current Department object."""
+        """Update the table row corresponding to the current Department instance."""
         sql = """
             UPDATE departments
             SET name = ?, location = ?
@@ -687,7 +695,7 @@ class Department:
         CONN.commit()
 
     def delete(self):
-        """Delete the table row corresponding to the current Department class instance"""
+        """Delete the table row corresponding to the current Department instance"""
         sql = """
             DELETE FROM departments
             WHERE id = ?
