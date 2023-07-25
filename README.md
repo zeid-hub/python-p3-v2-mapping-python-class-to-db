@@ -248,6 +248,13 @@ Expanding the `SQLITE EXPLORER` menu item lets us see the database schema:
 
 ![sqlite explorer view](https://curriculum-content.s3.amazonaws.com/7134/python-p3-v2-orm/sqlexplorerview.png)
 
+Another option is to use the
+[VS Code \*\*SQLITE Viewer extension](https://marketplace.visualstudio.com/items?itemName=qwtel.sqlite-viewer)
+to view the database tables. After installing the extension, right-click on the
+`company.db` file then select "Open with..." and then choose "SQLite Viewer".
+
+![sqlite viewer extension view]()
+
 If we want to delete the table from the database, we would execute the following
 in `ipdb`:
 
